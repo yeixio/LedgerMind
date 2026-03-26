@@ -1,0 +1,80 @@
+LedgerMind — Source Available License
+
+Copyright (c) 2026 Yeixio. All rights reserved.
+
+The copyright holder (“Licensor”) retains all intellectual property rights in
+this software and documentation, including but not limited to copyrights,
+patents, trade secrets, and trademarks. This license does not transfer ownership
+of any rights to you.
+
+1. Definitions
+
+   “Software” means the source code, object code, build scripts, documentation,
+   and other materials in this repository.
+
+   “Commercial Entity” means any for-profit organization, corporation, limited
+   liability company, partnership, or other legal entity organized for commercial
+   purposes; any government agency or instrumentality using the Software in
+   connection with paid services or internal operations that are not purely
+   personal; and any individual acting on behalf of or for the benefit of such an
+   entity.
+
+   “Commercial Use” means use of the Software, in whole or in part, directly or
+   indirectly, to support revenue-generating activity, paid services, internal
+   business operations of a Commercial Entity, or provision of the Software (or
+   derivatives) to customers, clients, or employees of a Commercial Entity as
+   part of products or services.
+
+   “Personal Use” means use by a natural person who is not a Commercial Entity and
+   who does not use the Software for Commercial Use, including learning,
+   research, hobby projects, and personal financial management for yourself or
+   your household.
+
+2. Free use (no fee)
+
+   Subject to the terms of this license, Licensor grants you a worldwide,
+   non-exclusive, non-transferable, revocable license to use, copy, modify, and
+   distribute the Software for Personal Use and for non-commercial educational or
+   research purposes, without payment to Licensor.
+
+3. Commercial Entity and Commercial Use — paid license required
+
+   If you are a Commercial Entity, or if your use constitutes Commercial Use,
+   you may not use, copy, modify, merge, publish, distribute, sublicense, sell, or
+   offer the Software (or any derivative work) for any purpose without a separate
+   written commercial license agreement with Licensor and payment of applicable
+   fees.
+
+   To obtain a commercial license, contact the copyright holder at the contact
+   information provided in this repository (for example, in README or
+   SECURITY.md). Until such an agreement is executed, Commercial Entities and
+   Commercial Use are not permitted.
+
+4. Attribution
+
+   You must retain copyright notices, this license text, and a clear notice of
+   any substantive modifications in any copy or substantial portion of the
+   Software you distribute under Section 2.
+
+5. No warranty
+
+   THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM
+   YOUR USE OF THE SOFTWARE.
+
+6. Termination
+
+   This license terminates automatically if you breach Section 3 or any
+   material term. Sections 1, 5, and 7 survive termination.
+
+7. General
+
+   If any provision is held unenforceable, the remainder remains in effect. This
+   license is governed by the laws applicable to Licensor’s principal place of
+   business, without regard to conflict-of-law rules.
+
+   For the avoidance of doubt: nothing in this license grants you a trademark
+   license or permission to use Licensor’s name or branding in commerce without
+   prior written consent.
