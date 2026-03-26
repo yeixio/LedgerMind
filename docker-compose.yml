@@ -1,0 +1,7 @@
+services:
+  ledgermind:
+    build: .
+    env_file:
+      - .env
+    # Override for other commands, e.g. docker compose run ledgermind snapshot
+    command: ["doctor"]

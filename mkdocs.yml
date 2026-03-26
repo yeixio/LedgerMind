@@ -1,0 +1,13 @@
+site_name: LedgerMind
+site_description: Privacy-first read-only YNAB planning assistant
+docs_dir: docs
+nav:
+  - Home: index.md
+  - Setup: setup.md
+  - Architecture: architecture.md
+  - Privacy: privacy.md
+  - MCP tools: mcp-tools.md
+  - Skills: skills.md
+  - Roadmap: roadmap.md
+  - Examples: examples.md
+  - Planning: planning/initial_plan.md

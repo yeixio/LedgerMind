@@ -1,0 +1,9 @@
+# Optional local debt metadata (APR / minimums). Keep private; do not commit.
+# Reference: LEDGERMIND_DEBT_METADATA_FILE in .env.example
+accounts:
+  visa:
+    apr: 24.99
+    minimum_payment: 75
+  car_loan:
+    apr: 6.25
+    minimum_payment: 310
