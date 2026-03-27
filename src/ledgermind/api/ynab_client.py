@@ -77,15 +77,19 @@ class YNABClient:
                 raise YNABAPIError("YNAB response missing data object", body=resp.text[:500])
             return data
 
+    def read_budgets_root(self) -> dict[str, Any]:
+        """Raw `data` object from GET /budgets (budgets list + default_budget)."""
+        return self._request("GET", "budgets")
+
     def list_budgets(self) -> list[dict[str, Any]]:
-        data = self._request("GET", "budgets")
+        data = self.read_budgets_root()
         budgets = data.get("budgets", [])
         if not isinstance(budgets, list):
             return []
         return budgets
 
     def default_budget_id(self) -> str | None:
-        data = self._request("GET", "budgets")
+        data = self.read_budgets_root()
         db = data.get("default_budget")
         if isinstance(db, dict):
             bid = db.get("id")

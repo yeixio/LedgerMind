@@ -9,12 +9,13 @@ from fastapi import APIRouter, Cookie, HTTPException, Request, Response
 
 from ledgermind.api.ynab_client import YNABClient
 from ledgermind.config import settings_with_overrides
+from ledgermind.domain.budgets import active_budgets_only
 from ledgermind.domain.models import BudgetSnapshot
 from ledgermind.domain.types import float_to_milliunits
 from ledgermind.exceptions import ConfigurationError, YNABAPIError
 from ledgermind.services.forecasting import project_cashflow
 from ledgermind.services.snapshot import build_budget_snapshot
-from ledgermind.session import month_first_or_today, resolve_budget_id
+from ledgermind.session import month_first_or_today, resolve_web_budget_id
 from ledgermind.web.schemas import SessionCreate, SessionPatch
 from ledgermind.web.session_store import SessionStore
 
@@ -23,7 +24,7 @@ COOKIE_MAX_AGE_SECONDS = 7 * 24 * 3600
 
 
 def _budget_list_payload(budgets: list[dict[str, Any]]) -> list[dict[str, str]]:
-    """Map YNAB budget summaries to id/name (YNAB JSON is usually camelCase; id stays lowercase)."""
+    """Map YNAB budget rows to id/name (pass active-only lists for the web picker)."""
     out: list[dict[str, str]] = []
     for b in budgets:
         bid = b.get("id")
@@ -74,8 +75,9 @@ def api_router() -> APIRouter:
                 detail=f"YNAB rejected this token or request failed: {e}",
             ) from e
 
+        active = active_budgets_only(budgets)
         if body.ynab_budget_id:
-            _validate_budget_id(budgets, body.ynab_budget_id)
+            _validate_budget_id(active, body.ynab_budget_id)
 
         store = get_store(request)
         sid = store.create(token, body.ynab_budget_id)
@@ -89,7 +91,7 @@ def api_router() -> APIRouter:
         )
         return {
             "ok": True,
-            "budgets": _budget_list_payload(budgets),
+            "budgets": _budget_list_payload(active),
         }
 
     @r.patch("/session")
@@ -109,7 +111,8 @@ def api_router() -> APIRouter:
                 budgets = client.list_budgets()
         except YNABAPIError as e:
             raise HTTPException(status_code=401, detail=str(e)) from e
-        _validate_budget_id(budgets, body.ynab_budget_id)
+        active = active_budgets_only(budgets)
+        _validate_budget_id(active, body.ynab_budget_id)
         if not store.update_budget(lm_sid, body.ynab_budget_id):
             raise HTTPException(status_code=401, detail="Session expired.")
         return {"ok": True, "ynab_budget_id": body.ynab_budget_id}
@@ -143,14 +146,23 @@ def api_router() -> APIRouter:
                     ynab_access_token=raw.ynab_access_token,
                     ynab_budget_id=raw.ynab_budget_id,
                 )
-                budget_id = resolve_budget_id(settings, client)
+                budget_id = resolve_web_budget_id(settings, client)
                 budgets = client.list_budgets()
+                if budget_id is None:
+                    return {
+                        "authenticated": True,
+                        "valid": True,
+                        "needs_budget_choice": True,
+                        "ynab_budget_id": None,
+                        "budget_name": None,
+                    }
                 name = _find_budget_name(budgets, budget_id)
         except (YNABAPIError, ConfigurationError):
             return {"authenticated": True, "valid": False}
         return {
             "authenticated": True,
             "valid": True,
+            "needs_budget_choice": False,
             "ynab_budget_id": budget_id,
             "budget_name": name,
         }
@@ -171,7 +183,8 @@ def api_router() -> APIRouter:
                 budgets = client.list_budgets()
         except YNABAPIError as e:
             raise HTTPException(status_code=401, detail=str(e)) from e
-        return {"budgets": _budget_list_payload(budgets)}
+        active = active_budgets_only(budgets)
+        return {"budgets": _budget_list_payload(active)}
 
     @r.get("/snapshot")
     def snapshot_api(
@@ -197,12 +210,25 @@ def api_router() -> APIRouter:
 
         def _snapshot(as_of: date) -> BudgetSnapshot:
             with YNABClient(raw.ynab_access_token) as client:
-                bid = resolve_budget_id(settings, client)
+                bid = resolve_web_budget_id(settings, client)
+                if bid is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail={
+                            "message": (
+                                "Choose a budget from the dropdown. "
+                                "Archived defaults are ignored; pick an active budget."
+                            ),
+                            "needs_budget_choice": True,
+                        },
+                    )
                 return build_budget_snapshot(client, bid, as_of=as_of)
 
         # YNAB 404s for months with no data yet (e.g. far-future month in the UI).
         try:
             snap = _snapshot(as_of_d)
+        except HTTPException:
+            raise
         except YNABAPIError as e:
             if e.status_code == 404 and month:
                 fallback = date.today()
@@ -247,7 +273,17 @@ def api_router() -> APIRouter:
         buf_m = float_to_milliunits(float(buf))
         try:
             with YNABClient(raw.ynab_access_token) as client:
-                bid = resolve_budget_id(settings, client)
+                bid = resolve_web_budget_id(settings, client)
+                if bid is None:
+                    raise HTTPException(
+                        status_code=400,
+                        detail={
+                            "message": (
+                                "Choose a budget from the dropdown before loading cash flow."
+                            ),
+                            "needs_budget_choice": True,
+                        },
+                    )
                 data = project_cashflow(
                     client,
                     bid,
@@ -255,6 +291,8 @@ def api_router() -> APIRouter:
                     minimum_buffer_milliunits=buf_m,
                     lookback_months=settings.ledgermind_default_lookback_months,
                 )
+        except HTTPException:
+            raise
         except (YNABAPIError, ConfigurationError) as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
         return data

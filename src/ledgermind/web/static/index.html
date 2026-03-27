@@ -22,7 +22,7 @@
       <form id="form-connect">
         <label for="token">YNAB personal access token</label>
         <input id="token" name="token" type="password" autocomplete="off" required />
-        <label for="budget">Budget (optional after connect)</label>
+        <label for="budget">Budget (after connect — required if you have more than one active budget)</label>
         <select id="budget" name="budget" disabled>
           <option value="">— Connect first —</option>
         </select>
@@ -38,6 +38,7 @@
         <span id="session-label"></span>
         <button type="button" id="btn-logout" class="secondary">Disconnect</button>
       </div>
+      <p id="budget-choice-banner" class="banner" hidden></p>
 
       <nav class="tabs">
         <button type="button" class="tab active" data-tab="dash">Dashboard</button>

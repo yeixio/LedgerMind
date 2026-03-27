@@ -59,6 +59,7 @@ def test_session_and_me(client: TestClient) -> None:
     me = r2.json()
     assert me["authenticated"] is True
     assert me["valid"] is True
+    assert me.get("needs_budget_choice") is False
     assert me["ynab_budget_id"] == "00000000-0000-4000-8000-000000000001"
 
 

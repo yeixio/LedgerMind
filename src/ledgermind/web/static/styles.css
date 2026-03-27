@@ -115,6 +115,16 @@ button:disabled {
   margin-top: 0.75rem;
 }
 
+.banner {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: #1c2d4a;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .toolbar {
   display: flex;
   align-items: center;

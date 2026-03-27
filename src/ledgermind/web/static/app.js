@@ -12,7 +12,13 @@ async function api(path, opts = {}) {
     data = { detail: text };
   }
   if (!r.ok) {
-    const msg = data.detail || data.message || r.statusText || "Request failed";
+    const d = data.detail;
+    if (typeof d === "object" && d !== null && d.message) {
+      const err = new Error(String(d.message));
+      err.needsBudgetChoice = d.needs_budget_choice === true;
+      throw err;
+    }
+    const msg = d || data.message || r.statusText || "Request failed";
     throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
   }
   return data;
@@ -24,13 +30,19 @@ function showConnectError(msg) {
   el.hidden = !msg;
 }
 
+function setBudgetChoiceBanner(visible, text) {
+  const banner = document.getElementById("budget-choice-banner");
+  if (!banner) return;
+  banner.hidden = !visible;
+  banner.textContent = text || "";
+}
+
 function setMonthDefault() {
   const d = new Date();
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const el = document.getElementById("month");
   el.value = `${y}-${m}`;
-  // Allow roughly current + 2 years of months (YNAB may not have data for all of them).
   const max = new Date(d.getFullYear() + 2, 11, 1);
   el.max = `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -45,7 +57,9 @@ function fillBudgetSelect(budgets) {
   sel.innerHTML = "";
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = "— Use YNAB default / first —";
+  const n = (budgets && budgets.length) || 0;
+  opt0.textContent =
+    n > 1 ? "— Select a budget —" : n === 1 ? "— Using your only active budget —" : "— No active budgets —";
   sel.appendChild(opt0);
   for (const b of budgets || []) {
     const o = document.createElement("option");
@@ -61,8 +75,18 @@ async function refreshMe() {
   const label = document.getElementById("session-label");
   if (!me.authenticated || !me.valid) {
     label.textContent = "";
+    setBudgetChoiceBanner(false, "");
     return me;
   }
+  if (me.needs_budget_choice) {
+    setBudgetChoiceBanner(
+      true,
+      "Select an active budget below. Archived budgets are hidden — YNAB’s default may point at an archived file.",
+    );
+    label.textContent = "Connected — choose a budget";
+    return me;
+  }
+  setBudgetChoiceBanner(false, "");
   label.textContent = me.budget_name
     ? `${me.budget_name} · ${me.ynab_budget_id}`
     : me.ynab_budget_id || "Connected";
@@ -82,8 +106,15 @@ async function loadSnapshot() {
       text = snap._note + "\n\n" + text;
     }
     out.textContent = text;
+    setBudgetChoiceBanner(false, "");
   } catch (e) {
     out.textContent = String(e.message || e);
+    if (e.needsBudgetChoice) {
+      setBudgetChoiceBanner(
+        true,
+        "Select an active budget from the dropdown above, then click Load again.",
+      );
+    }
   }
 }
 
@@ -94,9 +125,27 @@ async function loadCashflow() {
   try {
     const data = await api(`/api/cashflow?months=${encodeURIComponent(months)}`);
     out.textContent = JSON.stringify(data, null, 2);
+    setBudgetChoiceBanner(false, "");
   } catch (e) {
     out.textContent = String(e.message || e);
+    if (e.needsBudgetChoice) {
+      setBudgetChoiceBanner(
+        true,
+        "Select an active budget from the dropdown on the Dashboard tab first.",
+      );
+    }
   }
+}
+
+async function maybeLoadSnapshotAfterConnect() {
+  const me = await api("/api/me");
+  const out = document.getElementById("snapshot-out");
+  if (me.needs_budget_choice) {
+    out.textContent =
+      "Select which active budget to use from the dropdown above, then click Load (or pick a row to auto-load).";
+    return;
+  }
+  await loadSnapshot();
 }
 
 document.getElementById("form-connect").addEventListener("submit", async (ev) => {
@@ -112,12 +161,14 @@ document.getElementById("form-connect").addEventListener("submit", async (ev) =>
     const res = await api("/api/session", { method: "POST", body: JSON.stringify(body) });
     fillBudgetSelect(res.budgets);
     if (!res.budgets || res.budgets.length === 0) {
-      showConnectError("YNAB returned no budgets for this token. Check the token at YNAB developer settings.");
+      showConnectError(
+        "No active budgets found for this token (all may be archived). Un-archive one in YNAB or check the token.",
+      );
     }
     await refreshMe();
     showView(true);
     setMonthDefault();
-    await loadSnapshot();
+    await maybeLoadSnapshotAfterConnect();
   } catch (e) {
     showConnectError(e.message || String(e));
   } finally {
@@ -145,6 +196,7 @@ document.getElementById("btn-logout").addEventListener("click", async () => {
   document.getElementById("token").value = "";
   document.getElementById("budget").innerHTML = "<option value=\"\">— Connect first —</option>";
   document.getElementById("budget").disabled = true;
+  setBudgetChoiceBanner(false, "");
   showView(false);
   showConnectError("");
 });
@@ -170,7 +222,13 @@ document.getElementById("btn-cashflow").addEventListener("click", () => loadCash
       const bud = await api("/api/budgets");
       fillBudgetSelect(bud.budgets);
       await refreshMe();
-      await loadSnapshot();
+      const me2 = await api("/api/me");
+      if (!me2.needs_budget_choice) {
+        await loadSnapshot();
+      } else {
+        document.getElementById("snapshot-out").textContent =
+          "Select an active budget from the dropdown, then click Load.";
+      }
     } else {
       showView(false);
     }
