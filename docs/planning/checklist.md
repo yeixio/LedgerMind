@@ -124,20 +124,17 @@ Root and tooling
 
 - [x] Docs pass: `docs/index.md`, `architecture.md`, `setup.md`, `privacy.md`, `mcp-tools.md`, `skills.md`, `roadmap.md`, `examples.md` (initial drafts; deepen later)
 - [x] Docker workflow verified and documented
-- [x] Sample configs and sample outputs (sample outputs folder placeholder)
-- [ ] Roadmap + GitHub issue/PR templates (optional but in plan)
-- [ ] Privacy defaults verified (cache off path, logging, no telemetry)
+- [x] Sample configs and sample outputs (`examples/sample-outputs/README.md` + example JSON)
+- [x] Roadmap + GitHub issue/PR templates (`.github/ISSUE_TEMPLATE/`, `pull_request_template.md`)
+- [x] Privacy defaults verified (`docs/privacy.md` checklist, `docs/planning/phase5_release.md`); [cache.md](../cache.md) documents optional SQLite
 
-**Phase 5 exit:** strong public release candidate.
+**Phase 5 exit:** strong public release candidate. **Done.**
 
 ---
 
 ## Phase 6 — Future (not V1; design only)
 
-- [ ] OAuth / multi-user cloud (future)
-- [ ] Optional web UI
-- [ ] Write actions with confirmations
-- [ ] Richer forecasting, recurring income, multi-budget, plugins
+- [x] Themes captured in [phase6_future.md](phase6_future.md) (OAuth/multi-user, optional UI, write confirmations, forecasting/plugins, multi-tenant abstractions). **No implementation commitment.**
 
 ---
 
@@ -154,8 +151,8 @@ Root and tooling
 
 - [x] Default local-first documentation path
 - [x] No default analytics
-- [ ] Cache: documented fields; disable persistence option; clear-cache command (clear-cache done; SQLite persistence Phase 2+)
-- [ ] Data minimization in MCP responses
+- [x] Cache: behavior and design in [cache.md](../cache.md); optional `LEDGERMIND_CACHE_ENABLED`; `clear-cache` command
+- [x] Data minimization in MCP responses (documented in [privacy.md](../privacy.md); tool caps in [mcp-tools.md](../mcp-tools.md))
 - [x] `docs/privacy.md` + threat model (local compromise, env exposure, debug logging, broad tool outputs, future writes)
 - [x] Disclaimer language in docs and skill (docs + prompts; skill body Phase 4)
 
@@ -191,13 +188,13 @@ Fixtures: sanitized only; no real financial data.
 
 ## V1 acceptance criteria
 
-- [ ] Clone → token → running locally in under 15 minutes (documented)
-- [ ] CLI: budget snapshot, debt summary, at least one forecast
-- [ ] MCP: core read-only tools reliable
-- [ ] Docs sufficient for architecture and contribution
-- [ ] Privacy defaults strong and documented
-- [ ] No YNAB write actions in V1
-- [ ] Tests cover core financial calculations
+- [x] Clone → token → running locally in under 15 minutes ([setup.md](../setup.md) quick path)
+- [x] CLI: budget snapshot, debt summary, at least one forecast
+- [x] MCP: core read-only tools reliable
+- [x] Docs sufficient for architecture and contribution
+- [x] Privacy defaults strong and documented
+- [x] No YNAB write actions in V1
+- [ ] Tests cover core financial calculations (expand coverage over time; see Testing section)
 - [x] Skill package documents intended assistant behavior
 
 ---

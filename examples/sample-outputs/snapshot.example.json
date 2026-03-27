@@ -1,0 +1,24 @@
+{
+  "budget_id": "00000000-0000-4000-8000-000000000001",
+  "budget_name": "Example Budget",
+  "as_of": "2025-03-15",
+  "currency_format_iso": "USD",
+  "total_cash_on_budget_milliunits": 12500000,
+  "total_assigned_milliunits": 4200000,
+  "total_available_milliunits": 3800000,
+  "overspent_category_count": 1,
+  "to_be_budgeted_milliunits": 50000,
+  "age_of_money": 21,
+  "debt_accounts": [
+    {
+      "id": "00000000-0000-4000-8000-0000000000cc",
+      "name": "Example Card",
+      "account_type": "creditCard",
+      "on_budget": true,
+      "closed": false,
+      "balance_milliunits": -1500000,
+      "cleared_balance_milliunits": -1500000,
+      "uncleared_balance_milliunits": 0
+    }
+  ]
+}

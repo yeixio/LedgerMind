@@ -6,8 +6,13 @@ nav:
   - Setup: setup.md
   - Architecture: architecture.md
   - Privacy: privacy.md
+  - Cache: cache.md
   - MCP tools: mcp-tools.md
   - Skills: skills.md
   - Roadmap: roadmap.md
   - Examples: examples.md
-  - Planning: planning/initial_plan.md
+  - Planning:
+      - Checklist: planning/checklist.md
+      - Initial plan: planning/initial_plan.md
+      - Phase 5 release: planning/phase5_release.md
+      - Phase 6 future: planning/phase6_future.md

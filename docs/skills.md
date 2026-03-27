@@ -20,7 +20,7 @@ LedgerMind ships an **accountant-style** skill for agents that use the MCP tools
 
 ## Related docs
 
-- [Example prompts](../examples/prompts.md) — copy-paste starters by workflow.
+- [Example prompts](https://github.com/yeixio/LedgerMind/blob/main/examples/prompts.md) — copy-paste starters by workflow.
 - [Planning brief (initial_plan)](planning/initial_plan.md) — full product and skill plan.
 
 ## Repo layout

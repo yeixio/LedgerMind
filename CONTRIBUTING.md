@@ -21,7 +21,7 @@ mypy src/ledgermind
 
 ## Commits and PRs
 
-- Describe **what** changed and **why** in the PR body.
+- Describe **what** changed and **why** in the PR body. GitHub [issue templates](.github/ISSUE_TEMPLATE/) and [PR template](.github/pull_request_template.md) are available for consistency.
 - Add or update tests for non-trivial logic.
 - Update docs or the [planning checklist](docs/planning/checklist.md) when completing planned work.
 

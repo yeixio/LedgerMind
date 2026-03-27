@@ -5,6 +5,10 @@
 - Python **3.12+**
 - A YNAB [personal access token](https://app.ynab.com/settings/developer)
 
+## Quick path (under 15 minutes)
+
+From a clean clone: create a venv, `pip install -e ".[dev]"`, copy `.env.example` to `.env`, add `YNAB_ACCESS_TOKEN`, run `ledgermind doctor` then `ledgermind list-budgets` and `ledgermind snapshot`. If anything fails, use `ledgermind doctor` output and [privacy.md](privacy.md) (token handling).
+
 ## Local install
 
 ```bash
@@ -48,4 +52,4 @@ mkdocs serve
 
 ## MCP server
 
-Phase 3: `ledgermind run-mcp` will start the stdio MCP server. Until then the command exits with a notice.
+`ledgermind run-mcp` starts the **stdio** MCP server (FastMCP). Configure your client to launch this command with the same environment variables as the CLI (`YNAB_ACCESS_TOKEN`, optional `YNAB_BUDGET_ID`, etc.). Tool reference: [mcp-tools.md](mcp-tools.md).
