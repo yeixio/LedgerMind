@@ -16,6 +16,56 @@ Configure your MCP client (e.g. ChatGPT Desktop) to launch this command with `YN
 
 ---
 
+## Stdio MCP — not a URL
+
+LedgerMind’s MCP server uses **stdio** (standard input/output): a **local CLI process** that your app **starts** and talks to over pipes. Implementation: `create_mcp_app().run(transport="stdio")` in `src/ledgermind/mcp/server.py`.
+
+There is **no** `https://…` endpoint to paste for this mode. “Setup” means:
+
+1. Install the package (e.g. `pip install -e ".[dev]"` in a venv).
+2. Provide **`YNAB_ACCESS_TOKEN`** (and optionally **`YNAB_BUDGET_ID`**) in the **environment of that process**. LedgerMind loads `.env` from the **current working directory** when the process starts, or you can set variables in your MCP client’s server config.
+3. Configure your MCP client with a **command** + **arguments**, not a URL:
+
+| Field | Typical value |
+|-------|----------------|
+| Command | Full path to the venv binary, e.g. `/path/to/LedgerMind/.venv/bin/ledgermind` |
+| Arguments | `run-mcp` |
+
+**Sanity check in a terminal** (venv activated, `.env` with token in the repo root):
+
+```bash
+ledgermind run-mcp
+```
+
+The process should **block** and wait (that is stdio mode). Press Ctrl+C to stop. Your MCP client runs this same command for you when a conversation uses the connector.
+
+### If ChatGPT only asks for a URL
+
+Some UIs expect **remote** MCP over **HTTP/SSE**. LedgerMind **V1** does **not** ship an HTTP MCP server—only **stdio**. In that case you can:
+
+- Use a client that supports **stdio** MCP and a **command**-based connector (e.g. **Cursor** `mcp.json`, **Claude Desktop** MCP config, or other local agents), or  
+- Use the **local web UI** (`ledgermind serve`) or **CLI** for budget data without MCP.
+
+### Example: Cursor-style `mcp.json`
+
+Adjust the command path to your machine; avoid committing real tokens (use env or your client’s secret UI).
+
+```json
+{
+  "mcpServers": {
+    "ledgermind": {
+      "command": "/ABSOLUTE/PATH/TO/LedgerMind/.venv/bin/ledgermind",
+      "args": ["run-mcp"],
+      "env": {
+        "YNAB_ACCESS_TOKEN": "paste-or-use-env"
+      }
+    }
+  }
+}
+```
+
+---
+
 ## `get_budget_snapshot`
 
 **Input**

@@ -32,7 +32,7 @@ ledgermind goal --target 5000 --monthly 300
 ledgermind run-mcp
 ```
 
-Point your MCP client at `ledgermind run-mcp` with the same env vars; see [mcp-tools.md](mcp-tools.md).
+Point your MCP client at **`ledgermind run-mcp`** (stdio — a **command**, not a URL) with the same env vars; see [mcp-tools.md](mcp-tools.md) (**Stdio MCP — not a URL**).
 
 ## Local web UI
 
