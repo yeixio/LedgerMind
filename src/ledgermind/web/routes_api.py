@@ -9,6 +9,7 @@ from fastapi import APIRouter, Cookie, HTTPException, Request, Response
 
 from ledgermind.api.ynab_client import YNABClient
 from ledgermind.config import settings_with_overrides
+from ledgermind.domain.models import BudgetSnapshot
 from ledgermind.domain.types import float_to_milliunits
 from ledgermind.exceptions import ConfigurationError, YNABAPIError
 from ledgermind.services.forecasting import project_cashflow
@@ -22,12 +23,16 @@ COOKIE_MAX_AGE_SECONDS = 7 * 24 * 3600
 
 
 def _budget_list_payload(budgets: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Map YNAB budget summaries to id/name (YNAB JSON is usually camelCase; id stays lowercase)."""
     out: list[dict[str, str]] = []
     for b in budgets:
         bid = b.get("id")
+        if bid is None or bid == "":
+            bid = b.get("Id")
         if not bid:
             continue
-        out.append({"id": str(bid), "name": str(b.get("name", ""))})
+        name = b.get("name") if b.get("name") is not None else b.get("Name")
+        out.append({"id": str(bid), "name": str(name or "")})
     return out
 
 
@@ -189,12 +194,37 @@ def api_router() -> APIRouter:
             ynab_access_token=raw.ynab_access_token,
             ynab_budget_id=raw.ynab_budget_id,
         )
-        try:
+
+        def _snapshot(as_of: date) -> BudgetSnapshot:
             with YNABClient(raw.ynab_access_token) as client:
-                budget_id = resolve_budget_id(settings, client)
-                snap = build_budget_snapshot(client, budget_id, as_of=as_of_d)
-        except (YNABAPIError, ConfigurationError) as e:
+                bid = resolve_budget_id(settings, client)
+                return build_budget_snapshot(client, bid, as_of=as_of)
+
+        # YNAB 404s for months with no data yet (e.g. far-future month in the UI).
+        try:
+            snap = _snapshot(as_of_d)
+        except YNABAPIError as e:
+            if e.status_code == 404 and month:
+                fallback = date.today()
+                try:
+                    snap = _snapshot(fallback)
+                except (YNABAPIError, ConfigurationError) as e2:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            f"No month data in YNAB for {month}, and fallback failed: {e2}"
+                        ),
+                    ) from e2
+                out = snap.model_dump(mode="json")
+                out["_note"] = (
+                    f"YNAB has no data for {month} yet. Showing "
+                    f"{fallback.year}-{fallback.month:02d} instead (current month)."
+                )
+                return out
             raise HTTPException(status_code=400, detail=str(e)) from e
+        except ConfigurationError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
         return snap.model_dump(mode="json")
 
     @r.get("/cashflow")

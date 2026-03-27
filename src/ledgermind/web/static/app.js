@@ -28,7 +28,11 @@ function setMonthDefault() {
   const d = new Date();
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
-  document.getElementById("month").value = `${y}-${m}`;
+  const el = document.getElementById("month");
+  el.value = `${y}-${m}`;
+  // Allow roughly current + 2 years of months (YNAB may not have data for all of them).
+  const max = new Date(d.getFullYear() + 2, 11, 1);
+  el.max = `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function showView(authenticated) {
@@ -73,7 +77,11 @@ async function loadSnapshot() {
   out.textContent = "Loading…";
   try {
     const snap = await api(`/api/snapshot${q}`);
-    out.textContent = JSON.stringify(snap, null, 2);
+    let text = JSON.stringify(snap, null, 2);
+    if (snap && snap._note) {
+      text = snap._note + "\n\n" + text;
+    }
+    out.textContent = text;
   } catch (e) {
     out.textContent = String(e.message || e);
   }
@@ -97,16 +105,23 @@ document.getElementById("form-connect").addEventListener("submit", async (ev) =>
   const token = document.getElementById("token").value.trim();
   const budgetSel = document.getElementById("budget");
   const ynab_budget_id = budgetSel.value || null;
+  const btn = document.getElementById("btn-connect");
+  btn.disabled = true;
   try {
     const body = { ynab_access_token: token, ynab_budget_id };
     const res = await api("/api/session", { method: "POST", body: JSON.stringify(body) });
     fillBudgetSelect(res.budgets);
+    if (!res.budgets || res.budgets.length === 0) {
+      showConnectError("YNAB returned no budgets for this token. Check the token at YNAB developer settings.");
+    }
     await refreshMe();
     showView(true);
     setMonthDefault();
     await loadSnapshot();
   } catch (e) {
     showConnectError(e.message || String(e));
+  } finally {
+    btn.disabled = false;
   }
 });
 
