@@ -8,7 +8,7 @@ LedgerMind is a **privacy-first**, **read-only** assistant for [YNAB](https://ww
 
 - **Local-first**: run on your machine; no hosted backend required for self-use.
 - **Read-only (V1)**: no YNAB mutations—no moving money, editing transactions, or changing categories.
-- **Composable**: CLI today; **MCP** tools for ChatGPT in Phase 3.
+- **Composable**: CLI, **MCP** for agents, optional **accountant skill** ([docs/skills.md](docs/skills.md)).
 
 ## Features (V1 foundation)
 
@@ -16,13 +16,13 @@ LedgerMind is a **privacy-first**, **read-only** assistant for [YNAB](https://ww
 - List budgets; pick default, explicit `YNAB_BUDGET_ID`, or first budget
 - **Snapshot**: cash on budget, assigned/available totals, overspent category count, debt accounts on the books
 - **Analysis:** debt listing + payoff simulation (with optional local APR/min YAML), savings goal projection, cash-flow projection from recent months, category spending / overspending, subscription-style heuristics
-- **MCP:** `ledgermind run-mcp` exposes read-only tools for ChatGPT (see [docs/mcp-tools.md](docs/mcp-tools.md))
+- **MCP:** `ledgermind run-mcp` exposes read-only tools ([docs/mcp-tools.md](docs/mcp-tools.md)); **Skill:** [src/ledgermind/skills/accountant_skill/SKILL.md](src/ledgermind/skills/accountant_skill/SKILL.md)
 - Structured domain models with **milliunits** (YNAB’s 1/1000 currency integer)
 
 ## Architecture
 
 ```text
-YNAB API → YNABClient → normalization → services → CLI / (soon) MCP
+YNAB API → YNABClient → normalization → services → CLI / MCP / skill
 ```
 
 Details: [docs/architecture.md](docs/architecture.md).

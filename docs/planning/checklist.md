@@ -107,16 +107,16 @@ Root and tooling
 
 ## Phase 4 — Skill package
 
-- [ ] `accountant_skill/SKILL.md` (planning behavior, tool usage, workflows)
-- [ ] Debt payoff workflow guidance
-- [ ] Savings goal workflow guidance
-- [ ] Affordability workflow guidance
-- [ ] Monthly review workflow guidance
-- [ ] Output style: answer first, assumptions, options, risks, next action
-- [ ] Example prompts (`examples/prompts.md` and/or skill docs)
-- [ ] Limitations and assumptions documented
+- [x] `accountant_skill/SKILL.md` (planning behavior, tool usage, workflows)
+- [x] Debt payoff workflow guidance
+- [x] Savings goal workflow guidance
+- [x] Affordability workflow guidance
+- [x] Monthly review workflow guidance
+- [x] Output style: answer first, assumptions, options, risks, next action
+- [x] Example prompts (`examples/prompts.md` and/or skill docs)
+- [x] Limitations and assumptions documented
 
-**Phase 4 exit:** reusable assistant behavior layer documented.
+**Phase 4 exit:** reusable assistant behavior layer documented. **Done.**
 
 ---
 
@@ -198,7 +198,7 @@ Fixtures: sanitized only; no real financial data.
 - [ ] Privacy defaults strong and documented
 - [ ] No YNAB write actions in V1
 - [ ] Tests cover core financial calculations
-- [ ] Skill package documents intended assistant behavior
+- [x] Skill package documents intended assistant behavior
 
 ---
 
