@@ -4,6 +4,21 @@ Thanks for helping improve LedgerMind.
 
 ## Local setup
 
+### Makefile (macOS / Linux / Git Bash / WSL)
+
+From the repo root:
+
+```bash
+make help           # list targets and descriptions (see Makefile header for full notes)
+make install-all    # create .venv if needed; pip install -e ".[all]"
+pre-commit install  # optional
+make check          # ruff + mypy + pytest
+```
+
+Other common targets: `make install` (`[dev]` only), `make test`, `make lint`, `make typecheck`, `make docs`, `make serve` (local web UI). On Windows without `make`, use the manual commands below.
+
+### Manual (any platform)
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
