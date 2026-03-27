@@ -14,5 +14,6 @@ nav:
   - Planning:
       - Checklist: planning/checklist.md
       - Initial plan: planning/initial_plan.md
+      - MVP UI plan: planning/mvp_ui_plan.md
       - Phase 5 release: planning/phase5_release.md
       - Phase 6 future: planning/phase6_future.md
