@@ -15,6 +15,8 @@ LedgerMind is a **privacy-first**, **read-only** assistant for [YNAB](https://ww
 - Authenticate with a YNAB **personal access token**
 - List budgets; pick default, explicit `YNAB_BUDGET_ID`, or first budget
 - **Snapshot**: cash on budget, assigned/available totals, overspent category count, debt accounts on the books
+- **Analysis:** debt listing + payoff simulation (with optional local APR/min YAML), savings goal projection, cash-flow projection from recent months, category spending / overspending, subscription-style heuristics
+- **MCP:** `ledgermind run-mcp` exposes read-only tools for ChatGPT (see [docs/mcp-tools.md](docs/mcp-tools.md))
 - Structured domain models with **milliunits** (YNAB’s 1/1000 currency integer)
 
 ## Architecture
@@ -36,6 +38,10 @@ cp .env.example .env
 ledgermind doctor
 ledgermind list-budgets
 ledgermind snapshot
+ledgermind debts
+ledgermind cashflow --months 6
+ledgermind goal --target 10000 --monthly 300 --by-month 2027-01
+ledgermind run-mcp
 ```
 
 More: [docs/setup.md](docs/setup.md).

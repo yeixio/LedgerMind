@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date
 from typing import Any
 
@@ -12,11 +13,15 @@ from rich.table import Table
 from ledgermind import __version__
 from ledgermind.api.ynab_client import YNABClient
 from ledgermind.cache.sqlite import clear_cache
-from ledgermind.config import Settings, load_settings
-from ledgermind.domain.types import milliunits_to_float
+from ledgermind.config import load_settings
+from ledgermind.domain.types import float_to_milliunits, milliunits_to_float
 from ledgermind.exceptions import ConfigurationError, LedgerMindError, YNABAPIError
 from ledgermind.logging import setup_logging
+from ledgermind.services.debt import build_debts_view
+from ledgermind.services.forecasting import project_cashflow
+from ledgermind.services.goals import project_savings_goal
 from ledgermind.services.snapshot import build_budget_snapshot
+from ledgermind.session import month_first_or_today, resolve_budget_id
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 console = Console(stderr=True)
@@ -26,23 +31,15 @@ def _budget_id_from_row(b: dict[str, Any]) -> str:
     return str(b.get("id", ""))
 
 
-def resolve_budget_id(settings: Settings, client: YNABClient) -> str:
-    if settings.ynab_budget_id:
-        return settings.ynab_budget_id
-    default = client.default_budget_id()
-    if default:
-        return default
-    budgets = client.list_budgets()
-    if not budgets:
-        raise ConfigurationError("No budgets found for this YNAB token.")
-    return _budget_id_from_row(budgets[0])
-
-
 def _fmt_money(milliunits: int, iso: str | None) -> str:
     value = milliunits_to_float(milliunits)
     if iso:
         return f"{value:,.2f} {iso}"
     return f"{value:,.2f}"
+
+
+def _print_json(data: object) -> None:
+    print(json.dumps(data, indent=2, default=str))
 
 
 @app.callback()
@@ -125,14 +122,11 @@ def snapshot(
         console.print(f"[red]{e}[/red]")
         raise typer.Exit(2) from e
 
-    as_of = date.today()
-    if month:
-        try:
-            y, m = month.split("-", 1)
-            as_of = date(int(y), int(m), 1)
-        except ValueError as e:
-            console.print("[red]Use --month YYYY-MM[/red]")
-            raise typer.Exit(2) from e
+    try:
+        as_of = month_first_or_today(month) if month else date.today()
+    except ValueError as e:
+        console.print("[red]Use --month YYYY-MM[/red]")
+        raise typer.Exit(2) from e
 
     try:
         with YNABClient(token) as client:
@@ -159,6 +153,84 @@ def snapshot(
             console.print(line)
 
 
+@app.command()
+def debts() -> None:
+    """Print debt accounts as JSON (see LEDGERMIND_DEBT_METADATA_FILE for APR/mins)."""
+    settings = load_settings()
+    setup_logging(settings.ledgermind_log_level, debug_financial=settings.ledgermind_debug_log)
+    try:
+        token = settings.require_ynab_token()
+    except ConfigurationError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(2) from e
+    try:
+        with YNABClient(token) as client:
+            bid = resolve_budget_id(settings, client)
+            meta = settings.ledgermind_debt_metadata_file
+            data = build_debts_view(client, bid, metadata_path=meta)
+    except (YNABAPIError, LedgerMindError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(1) from e
+    _print_json(data)
+
+
+@app.command()
+def cashflow(
+    months: int = typer.Option(6, "--months", "-m", help="Months to project forward."),
+    income_pct: float = typer.Option(0.0, "--income-pct", help="Income adjustment %."),
+    spend_pct: float = typer.Option(0.0, "--spend-pct", help="Spending adjustment %."),
+) -> None:
+    """Project on-budget cash from recent average income/spending (JSON)."""
+    settings = load_settings()
+    setup_logging(settings.ledgermind_log_level, debug_financial=settings.ledgermind_debug_log)
+    try:
+        token = settings.require_ynab_token()
+    except ConfigurationError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(2) from e
+    buf = float_to_milliunits(float(settings.ledgermind_minimum_buffer))
+    try:
+        with YNABClient(token) as client:
+            bid = resolve_budget_id(settings, client)
+            data = project_cashflow(
+                client,
+                bid,
+                months=months,
+                income_adjustment_pct=income_pct,
+                spending_adjustment_pct=spend_pct,
+                minimum_buffer_milliunits=buf,
+                lookback_months=settings.ledgermind_default_lookback_months,
+            )
+    except (YNABAPIError, LedgerMindError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(1) from e
+    _print_json(data)
+
+
+@app.command()
+def goal(
+    target: float = typer.Option(..., "--target", help="Target amount (currency units, e.g. USD)."),
+    monthly: float = typer.Option(..., "--monthly", help="Monthly contribution (currency units)."),
+    saved: float = typer.Option(0.0, "--saved", help="Already saved (currency units)."),
+    by_month: str | None = typer.Option(
+        None,
+        "--by-month",
+        help="Target month YYYY-MM for required contribution gap.",
+    ),
+) -> None:
+    """Savings goal projection (JSON). Amounts are whole currency units."""
+    settings = load_settings()
+    setup_logging(settings.ledgermind_log_level, debug_financial=settings.ledgermind_debug_log)
+    _ = settings  # token not needed for pure math
+    data = project_savings_goal(
+        target_amount_milliunits=float_to_milliunits(target),
+        monthly_contribution_milliunits=float_to_milliunits(monthly),
+        current_saved_milliunits=float_to_milliunits(saved),
+        target_date=by_month,
+    )
+    _print_json(data)
+
+
 @app.command("clear-cache")
 def clear_cache_cmd() -> None:
     """Remove local SQLite cache file when caching is enabled."""
@@ -170,9 +242,10 @@ def clear_cache_cmd() -> None:
 
 @app.command("run-mcp")
 def run_mcp() -> None:
-    """Run the MCP server (Phase 3)."""
-    console.print("[yellow]MCP server is not implemented yet (Phase 3).[/yellow]")
-    raise typer.Exit(2)
+    """Run the MCP server (stdio)."""
+    from ledgermind.mcp.server import run_stdio_server
+
+    run_stdio_server()
 
 
 def run() -> None:

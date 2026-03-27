@@ -35,7 +35,7 @@ Root and tooling
 - [x] `api/ynab_client.py`
 - [x] `domain/` (`models.py`, `normalization.py`, `types.py`)
 - [x] `services/` (`snapshot` implemented; others Phase 2 stubs)
-- [x] `mcp/` (`server.py`, `registry.py`, `tools/*` — Phase 3 placeholders)
+- [x] `mcp/` (FastMCP `server.py`, `handlers.py`; `tools/*` stubs optional)
 - [x] `skills/` (`README.md`, `accountant_skill/SKILL.md` — Phase 4 placeholder body)
 - [x] `cache/sqlite.py` (clear-cache only until caching lands)
 - [x] `tests/unit`, `tests/integration`, `tests/fixtures`
@@ -48,11 +48,11 @@ Root and tooling
 - [x] YNAB auth with personal access token
 - [x] Read budgets, accounts, categories, payees, transactions (client + transaction pagination)
 - [x] Normalize YNAB → LedgerMind domain models (accounts, month, categories; extend in Phase 2)
-- [ ] Core MCP tools exposed and documented
-- [ ] Debt payoff simulation
-- [ ] Savings goal projections
-- [ ] Cash-flow trend / projection analysis
-- [ ] Category spending summaries
+- [x] Core MCP tools exposed and documented (`ledgermind run-mcp`, `docs/mcp-tools.md`)
+- [x] Debt payoff simulation (+ optional debt metadata YAML)
+- [x] Savings goal projections
+- [x] Cash-flow trend / projection analysis
+- [x] Category spending summaries (+ overspending, subscription heuristic)
 - [x] Clear docs and self-host instructions (initial; deepen in Phase 5)
 
 ---
@@ -64,7 +64,7 @@ Root and tooling
 - [x] Structured logging with redaction; safe debug mode
 - [x] YNAB client: auth, budgets, accounts, categories, payees, transactions, pagination/rate limits, errors
 - [x] Core domain models and money handling (units documented)
-- [x] CLI: `doctor`, `list-budgets`, `snapshot`, `clear-cache`; `run-mcp` stub (Phase 3)
+- [x] CLI: `doctor`, `list-budgets`, `snapshot`, `debts`, `cashflow`, `goal`, `clear-cache`, `run-mcp`
 - [x] README, CONTRIBUTING, SECURITY (Phase 1 deliverable set)
 
 **Phase 1 exit:** project runs locally; authenticates to YNAB; lists budgets; shows a snapshot. **Done.**
@@ -74,34 +74,34 @@ Root and tooling
 ## Phase 2 — Core analysis services
 
 - [ ] Snapshot service (month available/spending, net cash, summary) — Phase 1 covers basic snapshot; extend per plan
-- [ ] Spending service (by category, trends, averages, drift, MoM changes)
-- [ ] Debt service (debt-like accounts, metadata file for APR/min payment, avalanche/snowball, payoff date, interest, compare)
-- [ ] Goal service (months to target, contribution vs needed, scenarios)
-- [ ] Forecasting service (short-term projection, buffer, assumptions in output)
-- [ ] Subscription detection (recurring inference, cadence, amount creep)
-- [ ] CLI: `snapshot`, `debts`, `cashflow --months`, `goal --target … --monthly …`, `clear-cache`
+- [x] Spending service (by category, MoM change; trends/averages/drift can deepen)
+- [x] Debt service (debt-like accounts, metadata YAML, avalanche/snowball, payoff, interest, warnings)
+- [x] Goal service (months to target, contribution vs target date, stress helper)
+- [x] Forecasting service (short-term projection, buffer, assumptions)
+- [x] Subscription detection (heuristic recurring / creep)
+- [x] CLI: `snapshot`, `debts`, `cashflow`, `goal`, `clear-cache`
 
-**Phase 2 exit:** CLI answers core planning questions end-to-end.
+**Phase 2 exit:** CLI answers core planning questions end-to-end. **Largely done** (snapshot depth optional).
 
 ---
 
 ## Phase 3 — MCP server
 
-- [ ] MCP server skeleton and `run-mcp` entry
-- [ ] Tool registry with schemas and docstrings
-- [ ] `get_budget_snapshot`
-- [ ] `get_category_balances`
-- [ ] `get_recent_transactions`
-- [ ] `get_spending_by_category`
-- [ ] `find_overspending`
-- [ ] `get_debts`
-- [ ] `simulate_debt_payoff`
-- [ ] `project_savings_goal`
-- [ ] `project_cashflow`
-- [ ] `find_subscription_creep`
-- [ ] Structured outputs validated; integration tests for tool shapes
+- [x] MCP server and `run-mcp` entry (FastMCP stdio)
+- [x] Tool registration with schemas from type hints + docstrings
+- [x] `get_budget_snapshot`
+- [x] `get_category_balances`
+- [x] `get_recent_transactions`
+- [x] `get_spending_by_category`
+- [x] `find_overspending`
+- [x] `get_debts`
+- [x] `simulate_debt_payoff`
+- [x] `project_savings_goal`
+- [x] `project_cashflow`
+- [x] `find_subscription_creep`
+- [ ] Structured outputs: expand integration tests for each tool JSON shape
 
-**Phase 3 exit:** ChatGPT-compatible MCP server with read-only V1 tools.
+**Phase 3 exit:** ChatGPT-compatible MCP server with read-only V1 tools. **Done** (tests can deepen).
 
 ---
 
@@ -167,8 +167,8 @@ Unit
 
 - [x] Normalization
 - [x] Snapshot assembly (basic)
-- [ ] Debt payoff math
-- [ ] Goal projection math
+- [x] Debt payoff math (simulation smoke)
+- [x] Goal projection math
 - [ ] Subscription heuristics
 - [ ] Cash-flow forecasting
 - [ ] Config loading

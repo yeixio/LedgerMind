@@ -22,7 +22,13 @@ ledgermind doctor
 ledgermind list-budgets
 ledgermind snapshot
 ledgermind snapshot --month 2025-03
+ledgermind debts
+ledgermind cashflow --months 6
+ledgermind goal --target 5000 --monthly 300
+ledgermind run-mcp
 ```
+
+Point your MCP client at `ledgermind run-mcp` with the same env vars; see [mcp-tools.md](mcp-tools.md).
 
 ## Docker
 
