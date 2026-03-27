@@ -16,16 +16,12 @@
     <section id="view-connect" class="panel">
       <h2>Connect</h2>
       <p class="hint">
-        Your token stays in this app’s memory on your machine — not in browser storage.
+        Enter your YNAB personal access token. It stays in this app’s memory on your machine — not in browser storage.
         <a href="https://app.ynab.com/settings/developer" target="_blank" rel="noopener">YNAB developer settings</a>
       </p>
       <form id="form-connect">
         <label for="token">YNAB personal access token</label>
         <input id="token" name="token" type="password" autocomplete="off" required />
-        <label for="budget">Budget (after connect — required if you have more than one active budget)</label>
-        <select id="budget" name="budget" disabled>
-          <option value="">— Connect first —</option>
-        </select>
         <div class="actions">
           <button type="submit" id="btn-connect">Connect</button>
         </div>
@@ -33,12 +29,32 @@
       <p id="connect-error" class="error" hidden></p>
     </section>
 
+    <section id="view-connecting" class="panel panel-connecting" hidden>
+      <div class="connect-stage" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="connect-status" id="connect-status">Connecting to YNAB…</p>
+        <p class="hint connect-sub">Validating your token</p>
+      </div>
+    </section>
+
+    <section id="view-budget" class="panel" hidden>
+      <h2>Choose a budget</h2>
+      <p class="hint">Archived budgets are hidden. Pick which active budget to use for snapshots and analysis.</p>
+      <label for="budget-picker">Budget</label>
+      <select id="budget-picker" required></select>
+      <div class="actions">
+        <button type="button" id="btn-continue-budget" class="primary">Continue</button>
+      </div>
+      <p id="budget-error" class="error" hidden></p>
+    </section>
+
     <section id="view-app" class="panel" hidden>
       <div class="toolbar">
-        <span id="session-label"></span>
+        <button type="button" id="btn-back-budget" class="secondary">← Change budget</button>
+        <span id="session-label" class="session-label"></span>
         <button type="button" id="btn-logout" class="secondary">Disconnect</button>
       </div>
-      <p id="budget-choice-banner" class="banner" hidden></p>
+      <p id="app-error" class="error" hidden></p>
 
       <nav class="tabs">
         <button type="button" class="tab active" data-tab="dash">Dashboard</button>
@@ -51,7 +67,7 @@
         <input id="month" type="month" />
         <p class="hint" id="month-hint">Use the current month or a month you have already opened in YNAB. Far-future months may have no data yet.</p>
         <button type="button" id="btn-refresh-snap" class="secondary">Load</button>
-        <pre id="snapshot-out" class="json-out">Loading…</pre>
+        <pre id="snapshot-out" class="json-out">—</pre>
       </div>
 
       <div id="tab-cash" class="tab-panel" hidden>

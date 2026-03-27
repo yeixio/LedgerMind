@@ -117,6 +117,21 @@ def api_router() -> APIRouter:
             raise HTTPException(status_code=401, detail="Session expired.")
         return {"ok": True, "ynab_budget_id": body.ynab_budget_id}
 
+    @r.delete("/session/budget")
+    def clear_session_budget(
+        request: Request,
+        lm_sid: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
+    ) -> dict[str, Any]:
+        """Clear selected budget (keep PAT session); web UI returns to budget picker."""
+        if not lm_sid:
+            raise HTTPException(status_code=401, detail="Not authenticated.")
+        store = get_store(request)
+        if store.get(lm_sid) is None:
+            raise HTTPException(status_code=401, detail="Session expired.")
+        if not store.update_budget(lm_sid, None):
+            raise HTTPException(status_code=401, detail="Session expired.")
+        return {"ok": True, "ynab_budget_id": None}
+
     @r.delete("/session")
     def delete_session(
         request: Request,

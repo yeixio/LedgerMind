@@ -69,6 +69,25 @@ def test_budgets_unauthorized(client: TestClient) -> None:
 
 
 @respx.mock
+def test_delete_session_budget_clears_selection(client: TestClient) -> None:
+    respx.get("https://api.youneedabudget.com/v1/budgets").mock(
+        return_value=httpx.Response(200, json=_BUDGETS_JSON),
+    )
+    client.post(
+        "/api/session",
+        json={
+            "ynab_access_token": "tok",
+            "ynab_budget_id": "00000000-0000-4000-8000-000000000001",
+        },
+    )
+    r = client.delete("/api/session/budget")
+    assert r.status_code == 200
+    assert r.json()["ok"] is True
+    me = client.get("/api/me").json()
+    assert me.get("needs_budget_choice") is True
+
+
+@respx.mock
 def test_delete_session(client: TestClient) -> None:
     respx.get("https://api.youneedabudget.com/v1/budgets").mock(
         return_value=httpx.Response(200, json=_BUDGETS_JSON),

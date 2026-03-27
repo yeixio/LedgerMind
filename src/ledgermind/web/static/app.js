@@ -1,3 +1,13 @@
+const MIN_CONNECT_MS = 1100;
+const CONNECT_SUCCESS_EXTRA_MS = 450;
+
+/** Last active budget list from API (for “Change budget” without reconnect). */
+let cachedBudgets = [];
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function api(path, opts = {}) {
   const r = await fetch(path, {
     credentials: "include",
@@ -24,17 +34,31 @@ async function api(path, opts = {}) {
   return data;
 }
 
+function showStep(step) {
+  const map = {
+    connect: "view-connect",
+    connecting: "view-connecting",
+    budget: "view-budget",
+    app: "view-app",
+  };
+  for (const id of Object.values(map)) {
+    const el = document.getElementById(id);
+    if (el) el.hidden = true;
+  }
+  const show = document.getElementById(map[step]);
+  if (show) show.hidden = false;
+}
+
 function showConnectError(msg) {
   const el = document.getElementById("connect-error");
   el.textContent = msg;
   el.hidden = !msg;
 }
 
-function setBudgetChoiceBanner(visible, text) {
-  const banner = document.getElementById("budget-choice-banner");
-  if (!banner) return;
-  banner.hidden = !visible;
-  banner.textContent = text || "";
+function showBudgetError(msg) {
+  const el = document.getElementById("budget-error");
+  el.textContent = msg;
+  el.hidden = !msg;
 }
 
 function setMonthDefault() {
@@ -47,19 +71,13 @@ function setMonthDefault() {
   el.max = `${max.getFullYear()}-${String(max.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function showView(authenticated) {
-  document.getElementById("view-connect").hidden = authenticated;
-  document.getElementById("view-app").hidden = !authenticated;
-}
-
-function fillBudgetSelect(budgets) {
-  const sel = document.getElementById("budget");
+function fillBudgetPicker(budgets) {
+  const sel = document.getElementById("budget-picker");
   sel.innerHTML = "";
   const opt0 = document.createElement("option");
   opt0.value = "";
   const n = (budgets && budgets.length) || 0;
-  opt0.textContent =
-    n > 1 ? "— Select a budget —" : n === 1 ? "— Using your only active budget —" : "— No active budgets —";
+  opt0.textContent = n ? "— Select a budget —" : "— No active budgets —";
   sel.appendChild(opt0);
   for (const b of budgets || []) {
     const o = document.createElement("option");
@@ -67,30 +85,27 @@ function fillBudgetSelect(budgets) {
     o.textContent = b.name || b.id;
     sel.appendChild(o);
   }
-  sel.disabled = false;
+  const btn = document.getElementById("btn-continue-budget");
+  btn.disabled = n === 0;
 }
 
 async function refreshMe() {
-  const me = await api("/api/me");
+  return api("/api/me");
+}
+
+function updateSessionLabel(me) {
   const label = document.getElementById("session-label");
-  if (!me.authenticated || !me.valid) {
+  if (!me || !me.authenticated || !me.valid) {
     label.textContent = "";
-    setBudgetChoiceBanner(false, "");
-    return me;
+    return;
   }
   if (me.needs_budget_choice) {
-    setBudgetChoiceBanner(
-      true,
-      "Select an active budget below. Archived budgets are hidden — YNAB’s default may point at an archived file.",
-    );
-    label.textContent = "Connected — choose a budget";
-    return me;
+    label.textContent = "";
+    return;
   }
-  setBudgetChoiceBanner(false, "");
   label.textContent = me.budget_name
-    ? `${me.budget_name} · ${me.ynab_budget_id}`
-    : me.ynab_budget_id || "Connected";
-  return me;
+    ? `${me.budget_name}`
+    : me.ynab_budget_id || "";
 }
 
 async function loadSnapshot() {
@@ -106,15 +121,8 @@ async function loadSnapshot() {
       text = snap._note + "\n\n" + text;
     }
     out.textContent = text;
-    setBudgetChoiceBanner(false, "");
   } catch (e) {
     out.textContent = String(e.message || e);
-    if (e.needsBudgetChoice) {
-      setBudgetChoiceBanner(
-        true,
-        "Select an active budget from the dropdown above, then click Load again.",
-      );
-    }
   }
 }
 
@@ -125,80 +133,119 @@ async function loadCashflow() {
   try {
     const data = await api(`/api/cashflow?months=${encodeURIComponent(months)}`);
     out.textContent = JSON.stringify(data, null, 2);
-    setBudgetChoiceBanner(false, "");
   } catch (e) {
     out.textContent = String(e.message || e);
-    if (e.needsBudgetChoice) {
-      setBudgetChoiceBanner(
-        true,
-        "Select an active budget from the dropdown on the Dashboard tab first.",
-      );
-    }
   }
-}
-
-async function maybeLoadSnapshotAfterConnect() {
-  const me = await api("/api/me");
-  const out = document.getElementById("snapshot-out");
-  if (me.needs_budget_choice) {
-    out.textContent =
-      "Select which active budget to use from the dropdown above, then click Load (or pick a row to auto-load).";
-    return;
-  }
-  await loadSnapshot();
 }
 
 document.getElementById("form-connect").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   showConnectError("");
   const token = document.getElementById("token").value.trim();
-  const budgetSel = document.getElementById("budget");
-  const ynab_budget_id = budgetSel.value || null;
+  if (!token) {
+    showConnectError("Token is required.");
+    return;
+  }
   const btn = document.getElementById("btn-connect");
   btn.disabled = true;
+  document.getElementById("connect-status").textContent = "Connecting to YNAB…";
+  const sub = document.querySelector("#view-connecting .connect-sub");
+  if (sub) sub.textContent = "Validating your token";
+  showStep("connecting");
+
+  const resPromise = api("/api/session", {
+    method: "POST",
+    body: JSON.stringify({ ynab_access_token: token, ynab_budget_id: null }),
+  });
+
   try {
-    const body = { ynab_access_token: token, ynab_budget_id };
-    const res = await api("/api/session", { method: "POST", body: JSON.stringify(body) });
-    fillBudgetSelect(res.budgets);
-    if (!res.budgets || res.budgets.length === 0) {
-      showConnectError(
-        "No active budgets found for this token (all may be archived). Un-archive one in YNAB or check the token.",
+    await delay(MIN_CONNECT_MS);
+    const res = await resPromise;
+
+    document.getElementById("connect-status").textContent = "Connected";
+    if (sub) sub.textContent = "Preparing your budget list…";
+    await delay(CONNECT_SUCCESS_EXTRA_MS);
+
+    cachedBudgets = res.budgets || [];
+    fillBudgetPicker(cachedBudgets);
+    if (!cachedBudgets.length) {
+      showBudgetError(
+        "No active budgets found (all may be archived). Un-archive one in YNAB or check your token.",
       );
+    } else {
+      showBudgetError("");
     }
-    await refreshMe();
-    showView(true);
-    setMonthDefault();
-    await maybeLoadSnapshotAfterConnect();
+    showStep("budget");
   } catch (e) {
     showConnectError(e.message || String(e));
+    showStep("connect");
   } finally {
     btn.disabled = false;
   }
 });
 
-document.getElementById("budget").addEventListener("change", async () => {
-  const id = document.getElementById("budget").value;
-  if (!id) return;
+document.getElementById("btn-continue-budget").addEventListener("click", async () => {
+  const id = document.getElementById("budget-picker").value;
+  if (!id) {
+    showBudgetError("Select a budget to continue.");
+    return;
+  }
+  showBudgetError("");
+  const btn = document.getElementById("btn-continue-budget");
+  btn.disabled = true;
   try {
     await api("/api/session", {
       method: "PATCH",
       body: JSON.stringify({ ynab_budget_id: id }),
     });
-    await refreshMe();
+    const me = await refreshMe();
+    updateSessionLabel(me);
+    showAppError("");
+    showStep("app");
+    setMonthDefault();
     await loadSnapshot();
   } catch (e) {
-    showConnectError(e.message || String(e));
+    showBudgetError(e.message || String(e));
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+function showAppError(msg) {
+  const el = document.getElementById("app-error");
+  if (!el) return;
+  el.textContent = msg || "";
+  el.hidden = !msg;
+}
+
+document.getElementById("btn-back-budget").addEventListener("click", async () => {
+  showAppError("");
+  try {
+    await api("/api/session/budget", { method: "DELETE" });
+    const me = await refreshMe();
+    updateSessionLabel(me);
+    fillBudgetPicker(cachedBudgets);
+    document.getElementById("budget-picker").value = "";
+    document.getElementById("snapshot-out").textContent = "—";
+    document.getElementById("cashflow-out").textContent = "—";
+    showStep("budget");
+  } catch (e) {
+    showAppError(e.message || String(e));
   }
 });
 
 document.getElementById("btn-logout").addEventListener("click", async () => {
-  await api("/api/session", { method: "DELETE" });
+  try {
+    await api("/api/session", { method: "DELETE" });
+  } catch {
+    /* still reset UI */
+  }
   document.getElementById("token").value = "";
-  document.getElementById("budget").innerHTML = "<option value=\"\">— Connect first —</option>";
-  document.getElementById("budget").disabled = true;
-  setBudgetChoiceBanner(false, "");
-  showView(false);
+  cachedBudgets = [];
+  fillBudgetPicker([]);
   showConnectError("");
+  showBudgetError("");
+  showStep("connect");
 });
 
 document.querySelectorAll(".tab").forEach((btn) => {
@@ -218,21 +265,21 @@ document.getElementById("btn-cashflow").addEventListener("click", () => loadCash
   try {
     const me = await api("/api/me");
     if (me.authenticated && me.valid) {
-      showView(true);
       const bud = await api("/api/budgets");
-      fillBudgetSelect(bud.budgets);
-      await refreshMe();
-      const me2 = await api("/api/me");
-      if (!me2.needs_budget_choice) {
-        await loadSnapshot();
+      cachedBudgets = bud.budgets || [];
+      fillBudgetPicker(cachedBudgets);
+      if (me.needs_budget_choice) {
+        showStep("budget");
       } else {
-        document.getElementById("snapshot-out").textContent =
-          "Select an active budget from the dropdown, then click Load.";
+        updateSessionLabel(me);
+        showStep("app");
+        setMonthDefault();
+        await loadSnapshot();
       }
     } else {
-      showView(false);
+      showStep("connect");
     }
   } catch {
-    showView(false);
+    showStep("connect");
   }
 })();

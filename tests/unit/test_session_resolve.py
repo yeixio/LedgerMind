@@ -61,7 +61,8 @@ def test_resolve_web_none_when_multiple_active() -> None:
     assert resolve_web_budget_id(settings, _FakeClient(root)) is None
 
 
-def test_resolve_web_single_active() -> None:
+def test_resolve_web_single_active_still_requires_explicit_in_settings() -> None:
+    """Web flow always uses the picker; no auto id until ynab_budget_id is set."""
     settings = Settings(ynab_access_token="t", ynab_budget_id=None)
     root = {
         "budgets": [
@@ -69,7 +70,7 @@ def test_resolve_web_single_active() -> None:
         ],
         "default_budget": {"id": "only"},
     }
-    assert resolve_web_budget_id(settings, _FakeClient(root)) == "only"
+    assert resolve_web_budget_id(settings, _FakeClient(root)) is None
 
 
 def test_resolve_all_inactive_raises() -> None:

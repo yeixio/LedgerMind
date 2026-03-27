@@ -43,8 +43,10 @@ def resolve_budget_id(settings: Settings, client: YNABClient) -> str:
 
 def resolve_web_budget_id(settings: Settings, client: YNABClient) -> str | None:
     """
-    Same as resolve_budget_id, but when several active budgets exist and none is
-    chosen, return None so the web UI can require an explicit pick.
+    Web UI: only return a budget id when ``ynab_budget_id`` is set on settings.
+
+    The browser flow always shows a budget picker after connect; we never
+    auto-select (even when only one active budget exists).
     """
     data = client.read_budgets_root()
     budgets = data.get("budgets") or []
@@ -53,8 +55,6 @@ def resolve_web_budget_id(settings: Settings, client: YNABClient) -> str | None:
     active = active_budgets_only(budgets)
     if settings.ynab_budget_id:
         return settings.ynab_budget_id
-    if len(active) == 1:
-        return str(active[0].get("id", ""))
     if len(active) == 0:
         if budgets:
             raise ConfigurationError(
