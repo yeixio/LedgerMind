@@ -8,7 +8,7 @@ LedgerMind is a **privacy-first**, **read-only** assistant for [YNAB](https://ww
 
 - **Local-first**: run on your machine; no hosted backend required for self-use.
 - **Read-only (V1)**: no YNAB mutations—no moving money, editing transactions, or changing categories.
-- **Composable**: CLI, **MCP** for agents, optional **accountant skill** ([docs/skills.md](docs/skills.md)).
+- **Composable**: CLI, **local web UI** (`ledgermind serve`), **MCP** for agents, optional **accountant skill** ([docs/skills.md](docs/skills.md)).
 
 ## Features (V1 foundation)
 
@@ -22,7 +22,7 @@ LedgerMind is a **privacy-first**, **read-only** assistant for [YNAB](https://ww
 ## Architecture
 
 ```text
-YNAB API → YNABClient → normalization → services → CLI / MCP / skill
+YNAB API → YNABClient → normalization → services → CLI / web UI / MCP / skill
 ```
 
 Details: [docs/architecture.md](docs/architecture.md).
@@ -43,6 +43,8 @@ ledgermind cashflow --months 6
 ledgermind goal --target 10000 --monthly 300 --by-month 2027-01
 ledgermind run-mcp
 ```
+
+**Web UI (optional):** `pip install -e ".[api]"` then `ledgermind serve` and open `http://127.0.0.1:8765/` — enter your token in the browser (session stored in server memory only). See [docs/setup.md](docs/setup.md).
 
 More: [docs/setup.md](docs/setup.md).
 

@@ -36,6 +36,7 @@ Root and tooling
 - [x] `domain/` (`models.py`, `normalization.py`, `types.py`)
 - [x] `services/` (`snapshot` implemented; others Phase 2 stubs)
 - [x] `mcp/` (FastMCP `server.py`, `handlers.py`; `tools/*` stubs optional)
+- [x] `web/` (FastAPI local UI: `ledgermind serve`, session API, static assets)
 - [x] `skills/` (`README.md`, `accountant_skill/SKILL.md` — Phase 4 placeholder body)
 - [x] `cache/sqlite.py` (clear-cache only until caching lands)
 - [x] `tests/unit`, `tests/integration`, `tests/fixtures`
@@ -64,7 +65,7 @@ Root and tooling
 - [x] Structured logging with redaction; safe debug mode
 - [x] YNAB client: auth, budgets, accounts, categories, payees, transactions, pagination/rate limits, errors
 - [x] Core domain models and money handling (units documented)
-- [x] CLI: `doctor`, `list-budgets`, `snapshot`, `debts`, `cashflow`, `goal`, `clear-cache`, `run-mcp`
+- [x] CLI: `doctor`, `list-budgets`, `snapshot`, `debts`, `cashflow`, `goal`, `clear-cache`, `run-mcp`, `serve`
 - [x] README, CONTRIBUTING, SECURITY (Phase 1 deliverable set)
 
 **Phase 1 exit:** project runs locally; authenticates to YNAB; lists budgets; shows a snapshot. **Done.**

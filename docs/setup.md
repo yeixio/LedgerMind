@@ -34,6 +34,18 @@ ledgermind run-mcp
 
 Point your MCP client at `ledgermind run-mcp` with the same env vars; see [mcp-tools.md](mcp-tools.md).
 
+## Local web UI
+
+Requires the **`[api]`** extra (FastAPI + uvicorn):
+
+```bash
+pip install -e ".[api]"
+ledgermind serve
+# Open http://127.0.0.1:8765/ — bind address and port: --host / --port
+```
+
+Enter your **YNAB personal access token** in the UI (not in `.env` required for this path). The server keeps credentials **in memory** for your session; restarting `serve` clears them. See **Local web UI** in [privacy.md](privacy.md).
+
 ## Docker
 
 ```bash

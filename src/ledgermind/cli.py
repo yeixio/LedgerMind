@@ -248,6 +248,32 @@ def run_mcp() -> None:
     run_stdio_server()
 
 
+@app.command("serve")
+def serve(
+    host: str = typer.Option(
+        "127.0.0.1",
+        "--host",
+        help="Bind address (default: loopback only).",
+    ),
+    port: int = typer.Option(8765, "--port", "-p", help="HTTP port for the web UI."),
+) -> None:
+    """Start the local web UI (FastAPI + static assets on loopback)."""
+    try:
+        import uvicorn
+    except ImportError as e:
+        console.print('[red]Install API extras:[/red] pip install -e ".[api]"')
+        raise typer.Exit(2) from e
+    try:
+        from ledgermind.web.app import create_app
+    except ImportError as e:
+        console.print('[red]Install API extras:[/red] pip install -e ".[api]"')
+        raise typer.Exit(2) from e
+
+    console.print(f"LedgerMind web UI — http://{host}:{port}/")
+    console.print("Press Ctrl+C to stop.")
+    uvicorn.run(create_app(), host=host, port=port, log_level="info")
+
+
 def run() -> None:
     app()
 

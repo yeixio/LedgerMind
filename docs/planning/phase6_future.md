@@ -22,7 +22,7 @@ LedgerMind V1 is **read-only**, **local-first**, and **personal-token** based. P
 
 **Goal:** Browser UI for charts, scenario tables, and budget exploration—still backed by the same services layer.
 
-**Concrete plan:** See [mvp_ui_plan.md](mvp_ui_plan.md) for a proposed **MVP local web UI** (loopback server, in-UI PAT + budget, session/keychain storage options, and REST sketch).
+**Concrete plan / implementation:** [mvp_ui_plan.md](mvp_ui_plan.md) describes the design; **`ledgermind serve`** ships the MVP (loopback, in-UI PAT + budget, in-memory session). OS keychain persistence remains future work.
 
 **Design considerations**
 

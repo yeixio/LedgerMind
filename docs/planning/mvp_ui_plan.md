@@ -141,15 +141,16 @@ Names are illustrative; align with OpenAPI and existing domain DTOs.
 
 ## 11. CLI / packaging
 
-- **Dependency group:** `pip install -e ".[api]"` already includes FastAPI + uvicorn ([`pyproject.toml`](https://github.com/yeixio/LedgerMind/blob/main/pyproject.toml)); add `ledgermind serve` (or `ledgermind ui`) entry point.
-- **Docs:** Short section in [setup.md](../setup.md) when the command ships.
+- **Dependency group:** `pip install -e ".[api]"` includes FastAPI + uvicorn ([`pyproject.toml`](https://github.com/yeixio/LedgerMind/blob/main/pyproject.toml)).
+- **Entry point:** `ledgermind serve` (defaults: `127.0.0.1:8765`).
+- **Docs:** [setup.md](../setup.md#local-web-ui), [privacy.md](../privacy.md#local-web-ui-ledgermind-serve).
 
 ---
 
 ## 12. Privacy and docs
 
-- Update [privacy.md](../privacy.md) with a **“Local web UI”** subsection: browser ↔ loopback; credentials handled by the local server; no LedgerMind cloud.
-- Reuse [cache.md](../cache.md) behavior if the UI toggles cache (post-MVP).
+- [privacy.md](../privacy.md) includes **Local web UI** (loopback, in-memory session, no LedgerMind cloud).
+- [cache.md](../cache.md) applies if the UI gains cache toggles (post-MVP).
 
 ---
 

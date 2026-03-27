@@ -45,3 +45,18 @@ class Settings(BaseSettings):
 
 def load_settings() -> Settings:
     return Settings()
+
+
+def settings_with_overrides(
+    *,
+    ynab_access_token: str,
+    ynab_budget_id: str | None = None,
+) -> Settings:
+    """Merge env-backed settings with explicit YNAB credentials (e.g. local web UI session)."""
+    base = load_settings()
+    return base.model_copy(
+        update={
+            "ynab_access_token": ynab_access_token.strip(),
+            "ynab_budget_id": ynab_budget_id,
+        },
+    )

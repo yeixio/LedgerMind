@@ -5,7 +5,7 @@ YNAB API (read-only)
     -> YNABClient (httpx)
     -> normalization -> domain models
     -> services (snapshot, spending, debt, forecasting, …)
-    -> CLI  |  MCP (run-mcp)  |  accountant skill (prompting / workflows)
+    -> CLI  |  web UI (serve)  |  MCP (run-mcp)  |  accountant skill (prompting / workflows)
 ```
 
 - **Money**: YNAB amounts are **milliunits** (1/1000 of the currency unit); domain code uses `int` milliunits unless noted.

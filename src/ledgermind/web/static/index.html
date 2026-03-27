@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LedgerMind</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <h1>LedgerMind</h1>
+    <p class="tag">Read-only YNAB snapshot &amp; cash flow (local)</p>
+  </header>
+
+  <main>
+    <section id="view-connect" class="panel">
+      <h2>Connect</h2>
+      <p class="hint">
+        Your token stays in this app’s memory on your machine — not in browser storage.
+        <a href="https://app.ynab.com/settings/developer" target="_blank" rel="noopener">YNAB developer settings</a>
+      </p>
+      <form id="form-connect">
+        <label for="token">YNAB personal access token</label>
+        <input id="token" name="token" type="password" autocomplete="off" required />
+        <label for="budget">Budget (optional after connect)</label>
+        <select id="budget" name="budget" disabled>
+          <option value="">— Connect first —</option>
+        </select>
+        <div class="actions">
+          <button type="submit" id="btn-connect">Connect</button>
+        </div>
+      </form>
+      <p id="connect-error" class="error" hidden></p>
+    </section>
+
+    <section id="view-app" class="panel" hidden>
+      <div class="toolbar">
+        <span id="session-label"></span>
+        <button type="button" id="btn-logout" class="secondary">Disconnect</button>
+      </div>
+
+      <nav class="tabs">
+        <button type="button" class="tab active" data-tab="dash">Dashboard</button>
+        <button type="button" class="tab" data-tab="cash">Cash flow</button>
+      </nav>
+
+      <div id="tab-dash" class="tab-panel">
+        <h2>Snapshot</h2>
+        <label for="month">Month</label>
+        <input id="month" type="month" />
+        <button type="button" id="btn-refresh-snap" class="secondary">Load</button>
+        <pre id="snapshot-out" class="json-out">Loading…</pre>
+      </div>
+
+      <div id="tab-cash" class="tab-panel" hidden>
+        <h2>Cash flow projection</h2>
+        <label for="cf-months">Months ahead</label>
+        <input id="cf-months" type="number" min="1" max="36" value="6" />
+        <button type="button" id="btn-cashflow" class="secondary">Load</button>
+        <pre id="cashflow-out" class="json-out">—</pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>LedgerMind — educational planning only; not professional advice.</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
