@@ -6,7 +6,7 @@ from mcp.server.fastmcp import FastMCP
 
 from ledgermind.config import load_settings
 from ledgermind.logging import setup_logging
-from ledgermind.mcp import handlers as h
+from ledgermind.mcp.registry import register_v1_tools
 
 
 def create_mcp_app() -> FastMCP:
@@ -19,16 +19,7 @@ def create_mcp_app() -> FastMCP:
             "output, not tax, legal, or investment advice."
         ),
     )
-    mcp.add_tool(h.get_budget_snapshot)
-    mcp.add_tool(h.get_category_balances)
-    mcp.add_tool(h.get_recent_transactions)
-    mcp.add_tool(h.get_spending_by_category)
-    mcp.add_tool(h.find_overspending)
-    mcp.add_tool(h.get_debts)
-    mcp.add_tool(h.simulate_debt_payoff_tool, name="simulate_debt_payoff")
-    mcp.add_tool(h.project_savings_goal_tool, name="project_savings_goal")
-    mcp.add_tool(h.project_cashflow_tool, name="project_cashflow")
-    mcp.add_tool(h.find_subscription_creep_tool, name="find_subscription_creep")
+    register_v1_tools(mcp)
     return mcp
 
 

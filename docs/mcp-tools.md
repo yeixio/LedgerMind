@@ -1,5 +1,7 @@
 # MCP tools (V1)
 
+Tool names and handlers are defined in `src/ledgermind/mcp/registry.py` (`V1_TOOL_NAMES`, `register_v1_tools`).
+
 Run the server:
 
 ```bash

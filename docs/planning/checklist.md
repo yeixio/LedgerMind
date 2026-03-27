@@ -99,9 +99,9 @@ Root and tooling
 - [x] `project_savings_goal`
 - [x] `project_cashflow`
 - [x] `find_subscription_creep`
-- [ ] Structured outputs: expand integration tests for each tool JSON shape
+- [x] Structured outputs: integration tests for each tool JSON shape (`tests/integration/test_mcp_tool_shapes.py`)
 
-**Phase 3 exit:** ChatGPT-compatible MCP server with read-only V1 tools. **Done** (tests can deepen).
+**Phase 3 exit:** ChatGPT-compatible MCP server with read-only V1 tools. **Done.**
 
 ---
 
@@ -176,7 +176,7 @@ Unit
 Integration
 
 - [x] YNAB client with mocked HTTP (e.g. respx)
-- [ ] MCP tool output shape
+- [x] MCP tool output shape (per-tool key assertions + registry vs FastMCP)
 - [ ] CLI commands
 
 Golden / fixture
