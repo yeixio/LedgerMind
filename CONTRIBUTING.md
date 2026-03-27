@@ -15,7 +15,7 @@ pre-commit install  # optional
 make check          # ruff + mypy + pytest
 ```
 
-Other common targets: `make install` (`[dev]` only), `make test`, `make lint`, `make typecheck`, `make docs`, `make serve` (local web UI). On Windows without `make`, use the manual commands below.
+**Local web UI:** `make dev` installs dependencies then runs the app (API + static UI in one server). After the first install, `make serve` starts the same server without reinstalling. On Windows without `make`, use the manual commands below.
 
 ### Manual (any platform)
 

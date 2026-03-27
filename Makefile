@@ -7,7 +7,11 @@
 # Quick start:
 #   make help          # list targets
 #   make install-all   # venv + editable install with dev + api extras
+#   make dev           # one shot: install-all, then API + web UI (single process)
 #   make check         # lint, typecheck, tests
+#
+# The web stack is one server: FastAPI (JSON under /api) + static UI (/, /static).
+# There is no separate Node/Vite dev server.
 # -----------------------------------------------------------------------------
 
 SHELL := /bin/sh
@@ -69,8 +73,12 @@ docs: ## Serve documentation with MkDocs (http://127.0.0.1:8000 by default)
 docs-build: ## Build static site to site/
 	$(PY) -m mkdocs build
 
+.PHONY: dev
+dev: install-all ## One shot: install [all] extras, then run API + browser UI (single Uvicorn process)
+	$(LEDGERMIND) serve
+
 .PHONY: serve
-serve: ## Run local web UI (http://127.0.0.1:8765); requires FastAPI (make install-all or install-api)
+serve: ## Run local web UI only: FastAPI + static assets (http://127.0.0.1:8765); needs prior install-all or install-api
 	$(LEDGERMIND) serve
 
 .PHONY: precommit

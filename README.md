@@ -76,7 +76,9 @@ make install-all    # creates .venv if needed; pip install -e ".[all]"
 make check          # ruff + mypy + pytest
 ```
 
-Useful targets include **`venv`**, **`install`** (`[dev]` only), **`install-api`** (runtime + web extras), **`test`**, **`lint`**, **`typecheck`**, **`docs`** / **`docs-build`**, **`serve`** (local web UI), **`precommit`**, and **`clean`**. See the **comment block at the top of [Makefile](Makefile)** for behavior, paths, and platform notes.
+**Web UI in one shot:** `make dev` runs `install-all` and then starts **`ledgermind serve`** — the **REST API and the browser UI are the same process** (FastAPI + static files on `http://127.0.0.1:8765/`). After dependencies are installed once, use **`make serve`** to skip reinstall and start faster.
+
+Useful targets include **`venv`**, **`install`** (`[dev]` only), **`install-api`** (runtime + web extras), **`test`**, **`lint`**, **`typecheck`**, **`docs`** / **`docs-build`**, **`serve`**, **`dev`**, **`precommit`**, and **`clean`**. See the **comment block at the top of [Makefile](Makefile)** for behavior, paths, and platform notes.
 
 **Optional dependency groups** (see [`pyproject.toml`](pyproject.toml)):
 
