@@ -104,6 +104,12 @@ Useful targets include **`venv`**, **`install`** (`[dev]` only), **`install-api`
 - [docs/planning/checklist.md](docs/planning/checklist.md)
 - Full brief: [docs/planning/initial_plan.md](docs/planning/initial_plan.md)
 
+## Support LedgerMind
+
+LedgerMind is free for personal use. If it's useful to you, you can [donate to LedgerMind](https://yeix.io/donate/ledgermind), once or monthly, by card. Donations pay for its development. Nothing is held back for donors.
+
+[![Donate to LedgerMind](https://img.shields.io/badge/Donate-Support_LedgerMind-ff6a55?style=for-the-badge&logo=stripe&logoColor=white)](https://yeix.io/donate/ledgermind)
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
